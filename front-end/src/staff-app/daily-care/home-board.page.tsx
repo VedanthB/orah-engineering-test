@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useReducer } from "react"
 import styled from "styled-components"
 import Button from "@material-ui/core/ButtonBase"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -9,14 +9,16 @@ import { Person } from "shared/models/person"
 import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
+import { SortDropdown } from "staff-app/components/sort-dropdown/sort-dropdown.component"
+import { TextField } from "@material-ui/core"
+import { useStudentData } from "context/student-data.context"
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
+
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
 
-  useEffect(() => {
-    void getStudents()
-  }, [getStudents])
+  const { studentData, sortOptions, sortStudentData } = useStudentData()
 
   const onToolbarAction = (action: ToolbarAction) => {
     if (action === "roll") {
@@ -30,6 +32,22 @@ export const HomeBoardPage: React.FC = () => {
     }
   }
 
+  useEffect(() => {
+    void getStudents()
+  }, [getStudents])
+
+  // let str = "mor"
+
+  // let searchByFirstName = (str: string) => data?.students?.filter(({ first_name }) => first_name.toLowerCase().includes(str))
+  // let searchByLastName = (str: string) => data?.students?.filter(({ last_name }) => last_name.toLowerCase().includes(str))
+
+  // console.log("data", data)
+
+  // const result1 = searchByFirstName(str.toLowerCase())
+  // const result2 = searchByLastName(str.toLowerCase())
+
+  // console.log(result1, result2)
+
   return (
     <>
       <S.PageContainer>
@@ -41,9 +59,9 @@ export const HomeBoardPage: React.FC = () => {
           </CenteredContainer>
         )}
 
-        {loadState === "loaded" && data?.students && (
+        {loadState === "loaded" && studentData && (
           <>
-            {data.students.map((s) => (
+            {sortStudentData(sortOptions, studentData).map((s) => (
               <StudentListTile key={s.id} isRollMode={isRollMode} student={s} />
             ))}
           </>
@@ -55,6 +73,7 @@ export const HomeBoardPage: React.FC = () => {
           </CenteredContainer>
         )}
       </S.PageContainer>
+
       <ActiveRollOverlay isActive={isRollMode} onItemClick={onActiveRollAction} />
     </>
   )
@@ -66,10 +85,15 @@ interface ToolbarProps {
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const { onItemClick } = props
+
+  const { sortOptions } = useStudentData()
+
   return (
     <S.ToolbarContainer>
-      <div onClick={() => onItemClick("sort")}>First Name</div>
-      <div>Search</div>
+      <S.SortDropdownContainer onClick={() => onItemClick("sort")}>
+        {sortOptions.sortBy} <SortDropdown />
+      </S.SortDropdownContainer>
+      <S.TextField label="Search" size="small" variant="outlined" />
       <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
     </S.ToolbarContainer>
   )
@@ -88,7 +112,7 @@ const S = {
     align-items: center;
     color: #fff;
     background-color: ${Colors.blue.base};
-    padding: 6px 14px;
+    padding: 8px 20px;
     font-weight: ${FontWeight.strong};
     border-radius: ${BorderRadius.default};
   `,
@@ -97,6 +121,34 @@ const S = {
       padding: ${Spacing.u2};
       font-weight: ${FontWeight.strong};
       border-radius: ${BorderRadius.default};
+    }
+  `,
+  SortDropdownContainer: styled.div`
+    display: flex;
+    align-items: center;
+  `,
+  TextField: styled(TextField)`
+    & label.Mui-focused {
+      color: white;
+    }
+
+    & label {
+      color: white;
+    }
+
+    & .MuiOutlinedInput-root {
+      color: white;
+
+      & fieldset {
+        border-color: white;
+      }
+      &:hover fieldset {
+        border-color: white;
+      }
+      &.Mui-focused fieldset {
+        border-color: white;
+        color: white;
+      }
     }
   `,
 }

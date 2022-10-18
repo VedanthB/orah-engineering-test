@@ -9,6 +9,7 @@ export async function getActivities(): Promise<ApiResponse<{ activity: Activity[
     const rolls = get<Roll[]>(LocalStorageKey.rolls) || []
 
     await httpMock({ randomFailure: true })
+
     return {
       success: true,
       activity: buildActivities(rolls),
