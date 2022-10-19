@@ -44,7 +44,7 @@ export type STUDENT_STATE_ACTIONTYPE =
   | { type: "SORT_STUDENT_DATA_BY_ORDER" }
   | { type: "SEARCH_STUDENTS"; searchString: string }
   | { type: "TOGGLE_IS_ROLL_MODE_ACTIVE"; isRollModeActive: boolean }
-  | { type: "UPDATE_STUDENT_ROLLS"; newStudent: any }
+  | { type: "UPDATE_STUDENT_ROLLS"; newStudent: StudentRollObj }
   | { type: "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL"; students: Person[] }
   | { type: "FILTER_STUDENT_ROLE"; rollModeFilterType: string }
 
