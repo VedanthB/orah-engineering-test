@@ -13,6 +13,7 @@ import { TextField } from "@material-ui/core"
 import { useStudentState } from "context/student-data.context"
 import { SortToggle } from "staff-app/components/sort-toggle/sort-toggle.component"
 import { getSearchedStudents, getSortedStudents } from "shared/helpers/studentData-utils"
+import { SearchStudent } from "staff-app/components/search-student/search-student.component"
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
@@ -38,7 +39,7 @@ export const HomeBoardPage: React.FC = () => {
   }, [getStudents])
 
   const sortedStudents = data && getSortedStudents(data?.students, studentState)
-  const searchedStudents = sortedStudents && getSearchedStudents(sortedStudents, studentState.searchedString)
+  const searchedStudents = sortedStudents && getSearchedStudents(sortedStudents, studentState.searchString)
 
   return (
     <>
@@ -82,7 +83,8 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
     <S.ToolbarContainer>
       <SortToggle />
 
-      <TextField label="Search" size="small" variant="outlined" />
+      <SearchStudent />
+
       <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
     </S.ToolbarContainer>
   )
