@@ -22,6 +22,8 @@ export const ActiveRollOverlay: React.FC = () => {
     studentStateDispatch({ type: "FILTER_STUDENT_ROLE", rollModeFilterType: "all" })
 
     void saveRoll({ student_roll_states: studentRolls.map((item) => ({ student_id: item.id, roll_state: item.type })) })
+
+    studentStateDispatch({ type: "SAVE_ROLL_COUNT" })
   }
 
   const exitButtonHandler = () => {

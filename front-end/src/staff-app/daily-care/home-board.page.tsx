@@ -28,7 +28,7 @@ export const HomeBoardPage: React.FC = () => {
       data?.students &&
       studentState.studentRolls.length === 0 &&
       studentStateDispatch({ type: "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL", students: data?.students })
-  }, [getStudentsLoadState, studentStateDispatch, data?.students])
+  }, [getStudentsLoadState, studentStateDispatch, data?.students, studentState.studentRolls])
 
   const sortedStudents = data && sortStudents(studentState?.studentRolls, studentState)
 

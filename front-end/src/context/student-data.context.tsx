@@ -47,6 +47,7 @@ export type STUDENT_STATE_ACTIONTYPE =
   | { type: "UPDATE_STUDENT_ROLLS"; newStudent: StudentRollObj }
   | { type: "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL"; students: Person[] }
   | { type: "FILTER_STUDENT_ROLE"; rollModeFilterType: string }
+  | { type: "SAVE_ROLL_COUNT" }
 
 /* studentState reducer */
 const studentStateReducer = (state: typeof initStudentState, action: STUDENT_STATE_ACTIONTYPE) => {
@@ -102,6 +103,12 @@ const studentStateReducer = (state: typeof initStudentState, action: STUDENT_STA
         ...state,
         rollModeFilterType: action.rollModeFilterType,
       }
+
+    case "SAVE_ROLL_COUNT":
+      return {
+        ...initStudentState,
+      }
+
     default:
       return state
   }
