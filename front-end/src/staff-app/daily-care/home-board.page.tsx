@@ -9,16 +9,17 @@ import { Person } from "shared/models/person"
 import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
-import { SortDropdown } from "staff-app/components/sort-dropdown/sort-dropdown.component"
 import { TextField } from "@material-ui/core"
-import { useStudentData } from "context/student-data.context"
+import { useStudentState } from "context/student-data.context"
+import { SortToggle } from "staff-app/components/sort-toggle/sort-toggle.component"
+import { getSearchedStudents, getSortedStudents } from "shared/helpers/studentData-utils"
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
 
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
 
-  const { studentData, sortOptions, sortStudentData } = useStudentData()
+  const { studentState } = useStudentState()
 
   const onToolbarAction = (action: ToolbarAction) => {
     if (action === "roll") {
@@ -36,17 +37,8 @@ export const HomeBoardPage: React.FC = () => {
     void getStudents()
   }, [getStudents])
 
-  // let str = "mor"
-
-  // let searchByFirstName = (str: string) => data?.students?.filter(({ first_name }) => first_name.toLowerCase().includes(str))
-  // let searchByLastName = (str: string) => data?.students?.filter(({ last_name }) => last_name.toLowerCase().includes(str))
-
-  // console.log("data", data)
-
-  // const result1 = searchByFirstName(str.toLowerCase())
-  // const result2 = searchByLastName(str.toLowerCase())
-
-  // console.log(result1, result2)
+  const sortedStudents = data && getSortedStudents(data?.students, studentState)
+  const searchedStudents = sortedStudents && getSearchedStudents(sortedStudents, studentState.searchedString)
 
   return (
     <>
@@ -59,9 +51,9 @@ export const HomeBoardPage: React.FC = () => {
           </CenteredContainer>
         )}
 
-        {loadState === "loaded" && studentData && (
+        {loadState === "loaded" && data?.students && (
           <>
-            {sortStudentData(sortOptions, studentData).map((s) => (
+            {searchedStudents?.map((s) => (
               <StudentListTile key={s.id} isRollMode={isRollMode} student={s} />
             ))}
           </>
@@ -86,14 +78,11 @@ interface ToolbarProps {
 const Toolbar: React.FC<ToolbarProps> = (props) => {
   const { onItemClick } = props
 
-  const { sortOptions } = useStudentData()
-
   return (
     <S.ToolbarContainer>
-      <S.SortDropdownContainer onClick={() => onItemClick("sort")}>
-        {sortOptions.sortBy} <SortDropdown />
-      </S.SortDropdownContainer>
-      <S.TextField label="Search" size="small" variant="outlined" />
+      <SortToggle />
+
+      <TextField label="Search" size="small" variant="outlined" />
       <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
     </S.ToolbarContainer>
   )
@@ -121,34 +110,6 @@ const S = {
       padding: ${Spacing.u2};
       font-weight: ${FontWeight.strong};
       border-radius: ${BorderRadius.default};
-    }
-  `,
-  SortDropdownContainer: styled.div`
-    display: flex;
-    align-items: center;
-  `,
-  TextField: styled(TextField)`
-    & label.Mui-focused {
-      color: white;
-    }
-
-    & label {
-      color: white;
-    }
-
-    & .MuiOutlinedInput-root {
-      color: white;
-
-      & fieldset {
-        border-color: white;
-      }
-      &:hover fieldset {
-        border-color: white;
-      }
-      &.Mui-focused fieldset {
-        border-color: white;
-        color: white;
-      }
     }
   `,
 }

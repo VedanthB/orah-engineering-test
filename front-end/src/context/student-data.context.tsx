@@ -1,105 +1,53 @@
-import React, { createContext, useContext, useEffect, useReducer, useState } from "react"
-import { useApi } from "shared/hooks/use-api"
-import { Person } from "shared/models/person"
+import React, { createContext, useContext, useReducer } from "react"
 
 const StudentContext = createContext({})
 
 interface ContextValue {
-  studentData: Person[]
-  sortOptions: typeof sortInitState
-  sortDispatch: React.Dispatch<SORT_ACTIONTYPE>
-  sortStudentData: (sortOptions: typeof sortInitState, studentData: Person[]) => Person[]
+  studentState: typeof initStudentState
+  studentStateDispatch: React.Dispatch<STUDENT_STATE_ACTIONTYPE>
 }
 
-interface IStudentDataState {
-  sortAscending: Boolean
-  sortDescending: Boolean
-  sortBy: string
+export const initStudentState = {
+  searchedString: "",
+  sortOptions: {
+    isDataSorted: false,
+    firstName: false,
+    ascending: false,
+  },
 }
 
-let sortInitState = {
-  sortAscending: false,
-  sortDescending: false,
-  sortBy: "First Name",
-} as IStudentDataState
+export type STUDENT_STATE_ACTIONTYPE = { type: "SORT_STUDENT_DATA" } | { type: "SORT_STUDENT_DATA_BY_NAME" } | { type: "SORT_STUDENT_DATA_BY_ORDER" }
 
-export type SORT_ACTIONTYPE = { type: "SORT_BY"; sortBy: string } | { type: "SORT_ASCENDING" } | { type: "SORT_DESCENDING" } | { type: "RESET" }
+const studentStateReducer = (state: typeof initStudentState, action: STUDENT_STATE_ACTIONTYPE) => {
+  switch (action.type) {
+    case "SORT_STUDENT_DATA":
+      console.log("isDataSorted")
+      return {
+        ...state,
+        sortOptions: { ...state.sortOptions, isDataSorted: !state.sortOptions.isDataSorted },
+      }
 
-const sortReducer = (state: IStudentDataState, action: SORT_ACTIONTYPE) => {
-  const { type } = action
-  switch (type) {
-    case "SORT_BY":
-      return { ...state, sortBy: action.sortBy }
-    case "SORT_ASCENDING":
-      return { ...state, sortAscending: true, sortDescending: false }
-    case "SORT_DESCENDING":
-      return { ...state, sortAscending: false, sortDescending: true }
-    case "RESET":
-      return { ...state, sortAscending: false, sortDescending: false, sortBy: "First Name" }
+    case "SORT_STUDENT_DATA_BY_NAME":
+      return {
+        ...state,
+        sortOptions: { ...state.sortOptions, firstName: !state.sortOptions.firstName },
+      }
+
+    case "SORT_STUDENT_DATA_BY_ORDER":
+      return {
+        ...state,
+        sortOptions: { ...state.sortOptions, ascending: !state.sortOptions.ascending },
+      }
+
     default:
       return state
   }
 }
 
-const sortStudentData = (sortOptions: typeof sortInitState, studentData: Person[]) => {
-  const sortStudentDataByFirstName = (studentData: Person[], ascending: boolean) => {
-    return studentData.sort((a: Person, b: Person) => {
-      if (a.first_name < b.first_name) {
-        return ascending ? -1 : 1
-      }
-      if (a.first_name > b.first_name) {
-        return ascending ? 1 : -1
-      }
-      return 0
-    })
-  }
-  const sortStudentDataByLastName = (studentData: Person[], ascending: boolean) => {
-    return studentData.sort((a: Person, b: Person) => {
-      if (a.last_name < b.last_name) {
-        return ascending ? -1 : 1
-      }
-      if (a.last_name > b.last_name) {
-        return ascending ? 1 : -1
-      }
-      return 0
-    })
-  }
-
-  if (sortOptions.sortAscending) {
-    return sortOptions.sortBy === "First Name" ? sortStudentDataByFirstName(studentData, true) : sortStudentDataByLastName(studentData, true)
-  }
-
-  if (sortOptions.sortDescending) {
-    return sortOptions.sortBy === "First Name" ? sortStudentDataByFirstName(studentData, false) : sortStudentDataByLastName(studentData, false)
-  }
-
-  return studentData
-}
-
 export const StudentDataProvider: React.FC = ({ children }) => {
-  const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
+  const [studentState, studentStateDispatch] = useReducer(studentStateReducer, initStudentState)
 
-  const [studentData, setStudentData] = useState<Person[]>([])
-
-  const [sortOptions, sortDispatch] = useReducer(sortReducer, sortInitState)
-
-  useEffect(() => {
-    void getStudents()
-  }, [getStudents])
-
-  useEffect(() => {
-    if (loadState === "loaded" && data?.students) {
-      setStudentData(data?.students)
-    }
-  }, [data])
-
-  useEffect(() => {
-    // setStudentData(sortStudentData(sortOptions, studentData))
-  }, [sortOptions])
-
-  console.log(sortOptions, "23444", studentData)
-
-  return <StudentContext.Provider value={{ studentData, sortOptions, sortDispatch, sortStudentData }}>{children}</StudentContext.Provider>
+  return <StudentContext.Provider value={{ studentState, studentStateDispatch }}>{children}</StudentContext.Provider>
 }
 
-export const useStudentData = () => useContext(StudentContext) as ContextValue
+export const useStudentState = () => useContext(StudentContext) as ContextValue
