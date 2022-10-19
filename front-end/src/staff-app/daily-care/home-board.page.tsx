@@ -15,7 +15,7 @@ import { filterStudentsByRollCall, searchStudents, sortStudents } from "shared/h
 import { SearchStudent } from "staff-app/components/search-student/search-student.component"
 
 export const HomeBoardPage: React.FC = () => {
-  const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
+  const [getStudents, data, getStudentsLoadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
 
   const { studentState, studentStateDispatch } = useStudentState()
 
@@ -24,8 +24,11 @@ export const HomeBoardPage: React.FC = () => {
   }, [getStudents])
 
   useEffect(() => {
-    loadState === "loaded" && data?.students && studentStateDispatch({ type: "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL", students: data?.students })
-  }, [loadState, studentStateDispatch, data])
+    getStudentsLoadState === "loaded" &&
+      data?.students &&
+      studentState.studentRolls.length === 0 &&
+      studentStateDispatch({ type: "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL", students: data?.students })
+  }, [getStudentsLoadState, studentStateDispatch, data?.students])
 
   const sortedStudents = data && sortStudents(studentState?.studentRolls, studentState)
 
@@ -38,13 +41,13 @@ export const HomeBoardPage: React.FC = () => {
       <S.PageContainer>
         <Toolbar />
 
-        {loadState === "loading" && (
+        {getStudentsLoadState === "loading" && (
           <CenteredContainer>
             <FontAwesomeIcon icon="spinner" size="2x" spin />
           </CenteredContainer>
         )}
 
-        {loadState === "loaded" && data?.students && (
+        {getStudentsLoadState === "loaded" && data?.students && (
           <>
             {filteredStudents?.map((s: any) => (
               <StudentListTile key={s.id} student={s} />
@@ -52,7 +55,7 @@ export const HomeBoardPage: React.FC = () => {
           </>
         )}
 
-        {loadState === "error" && (
+        {getStudentsLoadState === "error" && (
           <CenteredContainer>
             <div>Failed to load</div>
           </CenteredContainer>

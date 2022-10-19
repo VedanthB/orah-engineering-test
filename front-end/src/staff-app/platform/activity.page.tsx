@@ -22,6 +22,14 @@ export const ActivityPage: React.FC = () => {
         </CenteredContainer>
       )}
 
+      {loadState === "loaded" && activityData?.activity.length === 0 && (
+        <>
+          <CenteredContainer>
+            <div>Save a roll call to see activity</div>
+          </CenteredContainer>
+        </>
+      )}
+
       {loadState === "loaded" && activityData?.activity && (
         <>
           {activityData?.activity?.map((a) => (
