@@ -5,21 +5,28 @@ import { Images } from "assets/images"
 import { Colors } from "shared/styles/colors"
 import { Person, PersonHelper } from "shared/models/person"
 import { RollStateSwitcher } from "staff-app/components/roll-state/roll-state-switcher.component"
+import { useStudentState } from "context/student-data.context"
 
 interface Props {
-  isRollMode?: boolean
   student: Person
 }
-export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
+
+export const StudentListTile: React.FC<Props> = ({ student }) => {
+  const {
+    studentState: { isRollModeActive },
+  } = useStudentState()
+
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
+
       <S.Content>
         <div>{PersonHelper.getFullName(student)}</div>
       </S.Content>
-      {isRollMode && (
+
+      {isRollModeActive && (
         <S.Roll>
-          <RollStateSwitcher />
+          <RollStateSwitcher student={student} />
         </S.Roll>
       )}
     </S.Container>

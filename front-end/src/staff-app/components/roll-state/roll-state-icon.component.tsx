@@ -6,7 +6,7 @@ import { Colors } from "shared/styles/colors"
 import { RolllStateType } from "shared/models/roll"
 
 interface Props {
-  type: RolllStateType
+  type?: RolllStateType
   size?: number
   onClick?: () => void
 }
@@ -19,7 +19,7 @@ export const RollStateIcon: React.FC<Props> = (props) => {
   )
 }
 
-function getBgColor(type: RolllStateType) {
+function getBgColor(type?: RolllStateType) {
   switch (type) {
     case "unmark":
       return "#fff"

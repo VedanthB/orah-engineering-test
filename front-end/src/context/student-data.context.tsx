@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer } from "react"
+import { Person } from "shared/models/person"
 
 const StudentContext = createContext({})
 
@@ -10,6 +11,10 @@ export const initStudentState = {
     firstName: false,
     ascending: false,
   },
+  isRollModeActive: false,
+  rollState: [{ type: "all" }, { type: "present" }, { type: "late" }, { type: "absent" }],
+  studentRolls: [] as StudentRollObj[],
+  rollModeFilterType: "all",
 }
 
 /* studentState context provider */
@@ -28,12 +33,20 @@ interface ContextValue {
   studentStateDispatch: React.Dispatch<STUDENT_STATE_ACTIONTYPE>
 }
 
+export interface StudentRollObj extends Person {
+  type: "unmark" | "present" | "late" | "absent"
+}
+
 /* studentState reducer action types */
 export type STUDENT_STATE_ACTIONTYPE =
   | { type: "SORT_STUDENT_DATA" }
   | { type: "SORT_STUDENT_DATA_BY_NAME" }
   | { type: "SORT_STUDENT_DATA_BY_ORDER" }
   | { type: "SEARCH_STUDENTS"; searchString: string }
+  | { type: "TOGGLE_IS_ROLL_MODE_ACTIVE"; isRollModeActive: boolean }
+  | { type: "UPDATE_STUDENT_ROLLS"; newStudent: any }
+  | { type: "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL"; students: Person[] }
+  | { type: "FILTER_STUDENT_ROLE"; rollModeFilterType: string }
 
 /* studentState reducer */
 const studentStateReducer = (state: typeof initStudentState, action: STUDENT_STATE_ACTIONTYPE) => {
@@ -62,6 +75,33 @@ const studentStateReducer = (state: typeof initStudentState, action: STUDENT_STA
         searchString: action.searchString,
       }
 
+    case "TOGGLE_IS_ROLL_MODE_ACTIVE":
+      return { ...state, isRollModeActive: action.isRollModeActive }
+
+    case "UPDATE_STUDENT_ROLLS":
+      const newStudent = action.newStudent
+      const existingStudentRolls = state.studentRolls
+
+      const newUpdatedStudentRoll = existingStudentRolls.some((item) => item?.id === newStudent?.id)
+        ? existingStudentRolls.map((studentObj: StudentRollObj) => (studentObj.id === newStudent.id ? { ...newStudent } : { ...studentObj }))
+        : existingStudentRolls.concat(action.newStudent)
+
+      return {
+        ...state,
+        studentRolls: newUpdatedStudentRoll,
+      }
+
+    case "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL":
+      return {
+        ...state,
+        studentRolls: state.studentRolls.concat(action.students.map((stuObj) => ({ ...stuObj, type: "unmark" }))),
+      }
+
+    case "FILTER_STUDENT_ROLE":
+      return {
+        ...state,
+        rollModeFilterType: action.rollModeFilterType,
+      }
     default:
       return state
   }

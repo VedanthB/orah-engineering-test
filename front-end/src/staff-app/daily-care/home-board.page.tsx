@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react"
+import React, { useEffect } from "react"
 import styled from "styled-components"
 import Button from "@material-ui/core/ButtonBase"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
@@ -8,43 +8,35 @@ import { CenteredContainer } from "shared/components/centered-container/centered
 import { Person } from "shared/models/person"
 import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
-import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
-import { TextField } from "@material-ui/core"
+import { ActiveRollOverlay } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
 import { useStudentState } from "context/student-data.context"
 import { SortToggle } from "staff-app/components/sort-toggle/sort-toggle.component"
-import { getSearchedStudents, getSortedStudents } from "shared/helpers/studentData-utils"
+import { filterStudentsByRollCall, searchStudents, sortStudents } from "shared/helpers/studentData-utils"
 import { SearchStudent } from "staff-app/components/search-student/search-student.component"
 
 export const HomeBoardPage: React.FC = () => {
-  const [isRollMode, setIsRollMode] = useState(false)
-
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
 
-  const { studentState } = useStudentState()
-
-  const onToolbarAction = (action: ToolbarAction) => {
-    if (action === "roll") {
-      setIsRollMode(true)
-    }
-  }
-
-  const onActiveRollAction = (action: ActiveRollAction) => {
-    if (action === "exit") {
-      setIsRollMode(false)
-    }
-  }
+  const { studentState, studentStateDispatch } = useStudentState()
 
   useEffect(() => {
     void getStudents()
   }, [getStudents])
 
-  const sortedStudents = data && getSortedStudents(data?.students, studentState)
-  const searchedStudents = sortedStudents && getSearchedStudents(sortedStudents, studentState.searchString)
+  useEffect(() => {
+    loadState === "loaded" && data?.students && studentStateDispatch({ type: "UPDATE_STUDENT_ROLLS_WITHOUT_ROLL", students: data?.students })
+  }, [loadState, studentStateDispatch, data])
+
+  const sortedStudents = data && sortStudents(studentState?.studentRolls, studentState)
+
+  const searchedStudents = sortedStudents && searchStudents(sortedStudents, studentState.searchString)
+
+  const filteredStudents = searchedStudents && filterStudentsByRollCall(searchedStudents, studentState)
 
   return (
     <>
       <S.PageContainer>
-        <Toolbar onItemClick={onToolbarAction} />
+        <Toolbar />
 
         {loadState === "loading" && (
           <CenteredContainer>
@@ -54,8 +46,8 @@ export const HomeBoardPage: React.FC = () => {
 
         {loadState === "loaded" && data?.students && (
           <>
-            {searchedStudents?.map((s) => (
-              <StudentListTile key={s.id} isRollMode={isRollMode} student={s} />
+            {filteredStudents?.map((s: any) => (
+              <StudentListTile key={s.id} student={s} />
             ))}
           </>
         )}
@@ -67,17 +59,15 @@ export const HomeBoardPage: React.FC = () => {
         )}
       </S.PageContainer>
 
-      <ActiveRollOverlay isActive={isRollMode} onItemClick={onActiveRollAction} />
+      <ActiveRollOverlay />
     </>
   )
 }
 
-type ToolbarAction = "roll" | "sort"
-interface ToolbarProps {
-  onItemClick: (action: ToolbarAction, value?: string) => void
-}
-const Toolbar: React.FC<ToolbarProps> = (props) => {
-  const { onItemClick } = props
+const Toolbar: React.FC = () => {
+  const { studentStateDispatch } = useStudentState()
+
+  const handleStartRollMode = () => studentStateDispatch({ type: "TOGGLE_IS_ROLL_MODE_ACTIVE", isRollModeActive: true })
 
   return (
     <S.ToolbarContainer>
@@ -85,7 +75,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
 
       <SearchStudent />
 
-      <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
+      <S.Button onClick={handleStartRollMode}>Start Roll</S.Button>
     </S.ToolbarContainer>
   )
 }

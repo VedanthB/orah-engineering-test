@@ -3,34 +3,41 @@ import styled from "styled-components"
 import Button from "@material-ui/core/Button"
 import { BorderRadius, Spacing } from "shared/styles/styles"
 import { RollStateList } from "staff-app/components/roll-state/roll-state-list.component"
+import { useStudentState } from "context/student-data.context"
 
 export type ActiveRollAction = "filter" | "exit"
-interface Props {
-  isActive: boolean
-  onItemClick: (action: ActiveRollAction, value?: string) => void
-}
 
-export const ActiveRollOverlay: React.FC<Props> = (props) => {
-  const { isActive, onItemClick } = props
+export const ActiveRollOverlay: React.FC = () => {
+  const {
+    studentState: { isRollModeActive },
+    studentStateDispatch,
+  } = useStudentState()
 
   return (
-    <S.Overlay isActive={isActive}>
+    <S.Overlay isActive={isRollModeActive}>
       <S.Content>
         <div>Class Attendance</div>
         <div>
-          <RollStateList
-            stateList={[
-              { type: "all", count: 0 },
-              { type: "present", count: 0 },
-              { type: "late", count: 0 },
-              { type: "absent", count: 0 },
-            ]}
-          />
+          <RollStateList />
+
           <div style={{ marginTop: Spacing.u6 }}>
-            <Button color="inherit" onClick={() => onItemClick("exit")}>
+            <Button
+              color="inherit"
+              onClick={() => {
+                studentStateDispatch({ type: "TOGGLE_IS_ROLL_MODE_ACTIVE", isRollModeActive: false })
+                studentStateDispatch({ type: "FILTER_STUDENT_ROLE", rollModeFilterType: "all" })
+              }}
+            >
               Exit
             </Button>
-            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={() => onItemClick("exit")}>
+            <Button
+              color="inherit"
+              style={{ marginLeft: Spacing.u2 }}
+              onClick={() => {
+                studentStateDispatch({ type: "TOGGLE_IS_ROLL_MODE_ACTIVE", isRollModeActive: false })
+                studentStateDispatch({ type: "FILTER_STUDENT_ROLE", rollModeFilterType: "all" })
+              }}
+            >
               Complete
             </Button>
           </div>

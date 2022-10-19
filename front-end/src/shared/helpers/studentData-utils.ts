@@ -1,26 +1,27 @@
-import { initStudentState } from "context/student-data.context"
+import { initStudentState, StudentRollObj } from "context/student-data.context"
 import { Person, PersonHelper } from "shared/models/person"
 
-export const getSearchedStudents = (allStudents: Person[], searchString: string) => {
+export const searchStudents = (studentRolls: StudentRollObj[], searchString: string) => {
   if (searchString === "") {
-    return allStudents
+    return studentRolls
   }
 
-  return allStudents?.filter((student) => (PersonHelper.getFullName(student).toLowerCase().includes(searchString.toLowerCase()) ? student : false))
+  return studentRolls?.filter((student) => (PersonHelper.getFullName(student).toLowerCase().includes(searchString.toLowerCase()) ? student : false))
 }
 
-export const getSortedStudents = (studentsData: Person[], appState: typeof initStudentState) => {
+export const sortStudents = (studentRolls: StudentRollObj[], appState: typeof initStudentState) => {
   const { sortOptions } = appState
 
-  let sortedStudents: Person[] = []
-  let key: keyof Person
+  let sortedStudents: StudentRollObj[] = []
+  let key: keyof StudentRollObj
+
   let nameOne
   let nameTwo
 
   if (sortOptions.isDataSorted) {
     key = sortOptions.firstName ? "first_name" : "last_name"
 
-    sortedStudents = studentsData.sort((a, b) => {
+    sortedStudents = studentRolls.sort((a, b) => {
       if (sortOptions.ascending) {
         nameOne = a[key]
         nameTwo = b[key]
@@ -44,5 +45,13 @@ export const getSortedStudents = (studentsData: Person[], appState: typeof initS
     return sortedStudents
   }
 
-  return studentsData
+  return studentRolls
+}
+
+export const filterStudentsByRollCall = (studentRolls: StudentRollObj[], state: typeof initStudentState) => {
+  if (state.rollModeFilterType === "all") {
+    return studentRolls
+  } else {
+    return studentRolls.filter((stuObj: StudentRollObj) => stuObj.type == state.rollModeFilterType)
+  }
 }
