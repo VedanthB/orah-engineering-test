@@ -5,6 +5,7 @@ import FormGroup from "@material-ui/core/FormGroup"
 import FormControlLabel from "@material-ui/core/FormControlLabel"
 import Switch from "@material-ui/core/Switch"
 import { useStudentState } from "context/student-data.context"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 
 export const SortToggle: React.FC = () => {
   const {
@@ -19,19 +20,23 @@ export const SortToggle: React.FC = () => {
       <FormControlLabel
         style={{ marginLeft: 0 }}
         control={<Switch size="small" checked={isDataSorted} onChange={() => studentStateDispatch({ type: "SORT_STUDENT_DATA" })} name="Sort User Data" />}
-        label="Sort User Data"
+        label="Sort Student Data"
         labelPlacement="start"
       />
       {isDataSorted && (
-        <FormGroup row>
-          <FormControlLabel
-            control={<Switch size="small" checked={firstName} onChange={() => studentStateDispatch({ type: "SORT_STUDENT_DATA_BY_NAME" })} name="Sort by name" />}
-            label={firstName ? "First Name" : "Last Name"}
-          />
-          <FormControlLabel
-            control={<Switch size="small" checked={ascending} onChange={() => studentStateDispatch({ type: "SORT_STUDENT_DATA_BY_ORDER" })} name="Sort by Order" />}
-            label={ascending ? "Ascending" : "Descending"}
-          />
+        <FormGroup row style={{ paddingLeft: "8px" }}>
+          <S.FormContainer>
+            <FormControlLabel
+              control={<Switch size="small" checked={firstName} onChange={() => studentStateDispatch({ type: "SORT_STUDENT_DATA_BY_NAME" })} name="Sort by name" />}
+              label={firstName ? "First Name" : "Last Name"}
+            />
+
+            {ascending ? (
+              <FontAwesomeIcon style={{ cursor: "pointer" }} size="xs" icon="arrow-up" onClick={() => studentStateDispatch({ type: "SORT_STUDENT_DATA_BY_ORDER" })} />
+            ) : (
+              <FontAwesomeIcon style={{ cursor: "pointer" }} size="xs" icon="arrow-down" onClick={() => studentStateDispatch({ type: "SORT_STUDENT_DATA_BY_ORDER" })} />
+            )}
+          </S.FormContainer>
         </FormGroup>
       )}
     </S.SortContainer>
@@ -48,5 +53,9 @@ const S = {
     font-size: ${FontSize.u2};
     padding: 0 ${Spacing.u5} 0 ${Spacing.u2};
     gap: ${Spacing.u1};
+  `,
+  FormContainer: styled.div`
+    display: flex;
+    align-items: center;
   `,
 }
