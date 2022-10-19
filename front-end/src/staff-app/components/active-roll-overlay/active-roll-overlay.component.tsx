@@ -4,14 +4,30 @@ import Button from "@material-ui/core/Button"
 import { BorderRadius, Spacing } from "shared/styles/styles"
 import { RollStateList } from "staff-app/components/roll-state/roll-state-list.component"
 import { useStudentState } from "context/student-data.context"
+import { useApi } from "shared/hooks/use-api"
 
 export type ActiveRollAction = "filter" | "exit"
 
 export const ActiveRollOverlay: React.FC = () => {
+  const [saveRoll, rollData, loadState] = useApi<{}>({ url: "save-roll" })
+
   const {
-    studentState: { isRollModeActive },
+    studentState: { isRollModeActive, studentRolls },
     studentStateDispatch,
   } = useStudentState()
+
+  const saveRollCountHandler = () => {
+    studentStateDispatch({ type: "TOGGLE_IS_ROLL_MODE_ACTIVE", isRollModeActive: false })
+
+    studentStateDispatch({ type: "FILTER_STUDENT_ROLE", rollModeFilterType: "all" })
+
+    void saveRoll({ student_roll_states: studentRolls.map((item) => ({ student_id: item.id, roll_state: item.type })) })
+  }
+
+  const exitButtonHandler = () => {
+    studentStateDispatch({ type: "TOGGLE_IS_ROLL_MODE_ACTIVE", isRollModeActive: false })
+    studentStateDispatch({ type: "FILTER_STUDENT_ROLE", rollModeFilterType: "all" })
+  }
 
   return (
     <S.Overlay isActive={isRollModeActive}>
@@ -21,23 +37,10 @@ export const ActiveRollOverlay: React.FC = () => {
           <RollStateList />
 
           <div style={{ marginTop: Spacing.u6 }}>
-            <Button
-              color="inherit"
-              onClick={() => {
-                studentStateDispatch({ type: "TOGGLE_IS_ROLL_MODE_ACTIVE", isRollModeActive: false })
-                studentStateDispatch({ type: "FILTER_STUDENT_ROLE", rollModeFilterType: "all" })
-              }}
-            >
+            <Button color="inherit" onClick={exitButtonHandler}>
               Exit
             </Button>
-            <Button
-              color="inherit"
-              style={{ marginLeft: Spacing.u2 }}
-              onClick={() => {
-                studentStateDispatch({ type: "TOGGLE_IS_ROLL_MODE_ACTIVE", isRollModeActive: false })
-                studentStateDispatch({ type: "FILTER_STUDENT_ROLE", rollModeFilterType: "all" })
-              }}
-            >
+            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={saveRollCountHandler}>
               Complete
             </Button>
           </div>
